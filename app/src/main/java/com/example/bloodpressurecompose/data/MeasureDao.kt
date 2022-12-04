@@ -1,12 +1,11 @@
 package com.example.bloodpressurecompose.data
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.example.bloodpressurecompose.model.Measurement
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface MeasurementDao {
+interface MeasureDao {
     @Query("select * from measurement order by date desc")
     fun getAll(): Flow<List<Measurement>>
 

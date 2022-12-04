@@ -2,17 +2,18 @@ package com.example.bloodpressurecompose.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bloodpressurecompose.MeasureScreen
 import com.example.bloodpressurecompose.R
@@ -24,67 +25,94 @@ import java.util.*
 
 @Composable
 fun MeasureCard(modifier: Modifier = Modifier,
-                measurement: Measurement?,
-                addMeasurement: (Measurement) -> Unit
+                measureId: Long = 0L,
+                viewModel: MeasureViewModel = hiltViewModel(),
+//                addMeasurement: (Measurement) -> Unit
 ) {
-    val measureDate by remember { mutableStateOf(measurement?.date) }
+//    val measure by viewModel.getMeasurement(measereId).collectAsState(initial = Measurement())
+//    var measure by if (measureId == 0L) {
+//        remember { mutableStateOf(Measurement()) }
+//    } else {
+//
+//    }
 
-    var mSysVal by remember { mutableStateOf(measurement?.morningSYS?.toString() ?: "") }
-    val mSysValChange = { text: String -> if (text.isDigitsOnly()) mSysVal = text }
-    var mDiaVal by remember { mutableStateOf(measurement?.morningDIA?.toString() ?: "") }
-    val mDiaValChange = { text: String -> if (text.isDigitsOnly()) mDiaVal = text }
-    var mPulseVal by remember { mutableStateOf(measurement?.morningPulse?.toString() ?: "") }
-    val mPulseValChange = { text: String -> if (text.isDigitsOnly()) mPulseVal = text }
-
-    var eSysVal by remember { mutableStateOf(measurement?.eveningSYS?.toString() ?: "") }
-    val eSysValChange = { text: String -> if (text.isDigitsOnly())  eSysVal = text }
-    var eDiaVal by remember { mutableStateOf(measurement?.eveningDIA?.toString() ?: "") }
-    val eDiaValChange = { text: String -> if (text.isDigitsOnly())  eDiaVal = text }
-    var ePulseVal by remember { mutableStateOf(measurement?.eveningPulse?.toString() ?: "") }
-    val ePulseValChange = { text: String -> if (text.isDigitsOnly())  ePulseVal = text }
-
-    val onSaveBtnClick1 = {
-        val msm = Measurement(
-            date = measureDate!!,
-            morningSYS = mSysVal.toInt(),
-            morningDIA = mDiaVal.toInt(),
-            morningPulse = mPulseVal.toInt(),
-            eveningSYS = eSysVal.toInt(),
-            eveningDIA = eDiaVal.toInt(),
-            eveningPulse = ePulseVal.toInt(),
-        )
-        addMeasurement(msm)
-    }
+    var measure = if (measureId == 0L) {
+        remember { mutableStateOf(Measurement()) }
+    } else {
+        viewModel.getMeasurement(measureId).collectAsState(initial = Measurement())
+    }.value
 
     Column(modifier = modifier.fillMaxSize()) {
-            MeasureCardHeader(modifier, measureDate?: Date())
+            MeasureCardHeader(modifier, measure.date)
 
-            MeasureCardData(modifier, 
-                R.drawable.ic_day, 
-                mSysVal, mSysValChange,
-                mDiaVal, mDiaValChange,
-                mPulseVal, mPulseValChange,
-                )
-
-            MeasureCardData(modifier,
-                R.drawable.ic_night,
-                eSysVal, eSysValChange,
-                eDiaVal, eDiaValChange,
-                ePulseVal, ePulseValChange,
-            )
+        //-----------------------------------------------------
+        Icon(painterResource(R.drawable.ic_day), contentDescription = null)
+        OutlinedTextField(
+            value = measure.morningSYS?.toString() ?: "0",
+            onValueChange = { measure = measure.copy(morningSYS = it.toIntOrNull()) },
+            label = { Text(text = "SYS") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        OutlinedTextField(
+            value = measure.morningDIA?.toString() ?: "0",
+            onValueChange = { measure.morningDIA = it.toIntOrNull() },
+            label = { Text(text = "DIA") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        OutlinedTextField(
+            value = measure.morningPulse?.toString() ?: "0",
+            onValueChange = { measure.morningPulse = it.toIntOrNull() },
+            label = { Text(text = "Pulse") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        //-----------------------------------------------------------------------
+        Icon(painterResource(R.drawable.ic_night), contentDescription = null)
+        OutlinedTextField(
+            value = measure.eveningSYS?.toString() ?: "0",
+            onValueChange = { measure = measure.copy(eveningSYS = it.toInt()) },
+            label = { Text(text = "SYS") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        OutlinedTextField(
+            value = measure.eveningDIA?.toString() ?: "0",
+            onValueChange = { measure.eveningDIA = it.toIntOrNull() },
+            label = { Text(text = "DIA") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        OutlinedTextField(
+            value = measure.eveningPulse?.toString() ?: "0",
+            onValueChange = { measure.eveningPulse = it.toIntOrNull() },
+            label = { Text(text = "Pulse") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        //---------------------------------------------------------------------------
 
         Row() {
             OutlinedButton(onClick = { /*TODO*/ }) {
                 Text(text = "Cancel")
             }
 
-            Button(onClick = onSaveBtnClick1) {
+            Button(
+                onClick = {
+                    if (measureId == 0L )
+                        viewModel.addMeasurement(measure)
+                    else viewModel.updateMeasurement(measure)
+                }
+            ) {
                 Text(text = "Save")
             }
         }
     }
 }
 
+/*
 @Composable
 fun MeasureCardData(modifier: Modifier, @DrawableRes iconId: Int,
                     sys: String, onSysChange: (String) -> Unit,
@@ -96,7 +124,7 @@ fun MeasureCardData(modifier: Modifier, @DrawableRes iconId: Int,
 
         TextField(
             value = sys,
-            onValueChange = onSysChange,
+            onValueChange = { sys = it },
             label = { Text(text = "SYS") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -120,6 +148,9 @@ fun MeasureCardData(modifier: Modifier, @DrawableRes iconId: Int,
     }
 }
 
+
+ */
+
 @Composable
 fun MeasureCardHeader(modifier: Modifier, date: Date) {
     Column() {
@@ -135,11 +166,3 @@ fun MeasureCardHeader(modifier: Modifier, date: Date) {
         )
     }
 }
-
-//@Preview
-//@Composable
-//fun MeasureCardPreview() {
-//    BloodPressureComposeTheme() {
-//        MeasureCard(measurement = Measurement(0, Date(), 120, 60, 70, 122, 62, 73))
-//    }
-//}
