@@ -1,168 +1,145 @@
 package com.example.bloodpressurecompose.ui
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.core.text.isDigitsOnly
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bloodpressurecompose.MeasureScreen
 import com.example.bloodpressurecompose.R
-import com.example.bloodpressurecompose.model.Measurement
-import com.example.bloodpressurecompose.ui.theme.BloodPressureComposeTheme
 import com.example.bloodpressurecompose.ui.viewmodel.MeasureViewModel
 import java.text.DateFormat.getDateInstance
 import java.util.*
 
 @Composable
-fun MeasureCard(modifier: Modifier = Modifier,
-                measureId: Long = 0L,
-                viewModel: MeasureViewModel = hiltViewModel(),
-//                addMeasurement: (Measurement) -> Unit
+fun MeasureCard(
+    modifier: Modifier = Modifier,
+    measureId: Long = 0L,
+    viewModel: MeasureViewModel = hiltViewModel(),
+    navigateUp: () -> Unit,
+    onSaveClick: (MeasureViewModel) -> Unit
 ) {
-//    val measure by viewModel.getMeasurement(measereId).collectAsState(initial = Measurement())
-//    var measure by if (measureId == 0L) {
-//        remember { mutableStateOf(Measurement()) }
-//    } else {
-//
-//    }
 
-    var measure = if (measureId == 0L) {
-        remember { mutableStateOf(Measurement()) }
-    } else {
-        viewModel.getMeasurement(measureId).collectAsState(initial = Measurement())
-    }.value
+    LaunchedEffect(key1 = Unit) {
+        viewModel.getMeasurement(measureId)
+    }
 
-    Column(modifier = modifier.fillMaxSize()) {
-            MeasureCardHeader(modifier, measure.date)
+    val measure = viewModel.measure
 
-        //-----------------------------------------------------
-        Icon(painterResource(R.drawable.ic_day), contentDescription = null)
-        OutlinedTextField(
-            value = measure.morningSYS?.toString() ?: "0",
-            onValueChange = { measure = measure.copy(morningSYS = it.toIntOrNull()) },
-            label = { Text(text = "SYS") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        OutlinedTextField(
-            value = measure.morningDIA?.toString() ?: "0",
-            onValueChange = { measure.morningDIA = it.toIntOrNull() },
-            label = { Text(text = "DIA") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        OutlinedTextField(
-            value = measure.morningPulse?.toString() ?: "0",
-            onValueChange = { measure.morningPulse = it.toIntOrNull() },
-            label = { Text(text = "Pulse") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        //-----------------------------------------------------------------------
-        Icon(painterResource(R.drawable.ic_night), contentDescription = null)
-        OutlinedTextField(
-            value = measure.eveningSYS?.toString() ?: "0",
-            onValueChange = { measure = measure.copy(eveningSYS = it.toInt()) },
-            label = { Text(text = "SYS") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        OutlinedTextField(
-            value = measure.eveningDIA?.toString() ?: "0",
-            onValueChange = { measure.eveningDIA = it.toIntOrNull() },
-            label = { Text(text = "DIA") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        OutlinedTextField(
-            value = measure.eveningPulse?.toString() ?: "0",
-            onValueChange = { measure.eveningPulse = it.toIntOrNull() },
-            label = { Text(text = "Pulse") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        //---------------------------------------------------------------------------
 
-        Row() {
-            OutlinedButton(onClick = { /*TODO*/ }) {
-                Text(text = "Cancel")
-            }
+    val updatedDate: (Date) -> Unit =  {
+        viewModel.updateDate(it)
+    }
+    val context = LocalContext.current
 
-            Button(
-                onClick = {
-                    if (measureId == 0L )
-                        viewModel.addMeasurement(measure)
-                    else viewModel.updateMeasurement(measure)
+    Scaffold(
+        topBar = {
+            MeasureCardHeader(
+                date = measure.date,
+                navigateUp = navigateUp,
+                dateDialogOn = { showDatePicker(context, measure.date, updatedDate) })
+         },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                text = { Text(text = "Save") },
+                icon = { Icon(imageVector = Icons.Default.Done, contentDescription = null) },
+                onClick = { onSaveClick(viewModel) })
+        }
+    ) {
+        Column(modifier = modifier
+            .fillMaxSize()
+            .padding(it)
+        ) {
+            //-----------------------------------------------------
+            Row(Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Icon(painterResource(R.drawable.ic_day), contentDescription = null)
+                    ValueTextField(
+                        value = measure.morningSYS, label = "SYS",
+                        onValueChange = { viewModel.updateMSys(it) },
+                        onSaveClick = { onSaveClick(viewModel) })
+
+                    ValueTextField(
+                        value = measure.morningDIA, label = "DIA",
+                        onValueChange = { viewModel.updateMDia(it) },
+                        onSaveClick = { onSaveClick(viewModel) })
+
+                    ValueTextField(
+                        value = measure.morningPulse, label = "Pulse",
+                        onValueChange = { viewModel.updateMPulse(it) },
+                        onSaveClick = { onSaveClick(viewModel) })
                 }
-            ) {
-                Text(text = "Save")
+
+                Column(Modifier.weight(1f)) {
+                    Icon(painterResource(R.drawable.ic_night), contentDescription = null)
+                    ValueTextField(
+                        value = measure.eveningSYS, label = "SYS",
+                        onValueChange = { viewModel.updateESys(it) },
+                        onSaveClick = { onSaveClick(viewModel) })
+
+                    ValueTextField(
+                        value = measure.eveningDIA, label = "DIA",
+                        onValueChange = { viewModel.updateEDia(it) },
+                        onSaveClick = { onSaveClick(viewModel) })
+
+                    ValueTextField(
+                        value = measure.eveningPulse, label = "Pulse",
+                        onValueChange = { viewModel.updateEPulse(it) },
+                        onSaveClick = { onSaveClick(viewModel) })
+                }
             }
         }
     }
 }
 
-/*
 @Composable
-fun MeasureCardData(modifier: Modifier, @DrawableRes iconId: Int,
-                    sys: String, onSysChange: (String) -> Unit,
-                    dia: String, onDiaChange: (String) -> Unit,
-                    pulse: String, onPulseChange: (String) -> Unit,
+fun MeasureCardHeader(
+    date: Date,
+    navigateUp: () -> Unit,
+    dateDialogOn: () -> Unit
 ) {
-    Column() {
-        Icon(painterResource(iconId), contentDescription = null)
-
-        TextField(
-            value = sys,
-            onValueChange = { sys = it },
-            label = { Text(text = "SYS") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        TextField(
-            value = dia,
-            onValueChange = onDiaChange,
-            label = { Text(text = "DIA") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        TextField(
-            value = pulse,
-            onValueChange = onPulseChange,
-            label = { Text(text = "PULSE") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-    }
-}
-
-
- */
-
-@Composable
-fun MeasureCardHeader(modifier: Modifier, date: Date) {
-    Column() {
-        TextField(
-            modifier = modifier.clickable {  },
-            value = getDateInstance().format(date),
-            onValueChange = {},
-            enabled = false,
-            trailingIcon = {
-                Icon(painter = painterResource(id = R.drawable.ic_calendar_month_24),
+    TopAppBar(
+        title = { Text(text = getDateInstance().format(date)) },
+        navigationIcon = {
+            IconButton(onClick = navigateUp) {
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+            }
+         },
+        actions = {
+            IconButton(
+                onClick = dateDialogOn ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_calendar_month_24),
                     contentDescription = null)
             }
-        )
-    }
+        }
+    )
+}
+
+@Composable
+fun ValueTextField(
+    value: Int?,
+    label: String,
+    onValueChange: (Int) -> Unit,
+    onSaveClick: () -> Unit
+) {
+    OutlinedTextField(
+        value = value?.toString() ?: "0",
+        onValueChange = { onValueChange(it.toIntOrNull() ?: 0) },
+        label = { Text(text = label) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.NumberPassword,
+            imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { onSaveClick() } )
+    )
 }
