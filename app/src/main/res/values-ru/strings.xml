@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Журнал давления</string>
+    <string name="sys">верх.</string>
+    <string name="dia">нижн.</string>
+    <string name="pulse">пульс</string>
+    <string name="save">Сохранить</string>
+</resources>

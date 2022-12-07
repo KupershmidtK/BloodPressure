@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">Blood Pressure Compose</string>
+    <string name="app_name">Blood Pressure Diary</string>
+    <string name="sys">sys</string>
+    <string name="dia">dia</string>
+    <string name="pulse">pulse</string>
+    <string name="save">Save</string>
 </resources>
