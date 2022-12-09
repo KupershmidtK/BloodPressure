@@ -3,6 +3,7 @@ package com.example.bloodpressurecompose.ui
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,8 +36,8 @@ fun NightIcon(modifier: Modifier = Modifier) {
 fun DeleteIcon(modifier: Modifier = Modifier) {
     Icon(
         modifier = modifier,
-        imageVector = Icons.Outlined.Delete,
+        imageVector = Icons.Default.Delete,
         contentDescription = "delete",
-        tint = MaterialTheme.colors.primary
+        tint = DayColor
     )
 }

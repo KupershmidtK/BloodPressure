@@ -47,7 +47,7 @@ fun MeasureItem(
     onDeleteClick: () -> Unit) {
     Card(
         modifier = modifier
-            .padding(6.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
             .fillMaxWidth()
             .clickable(true, onClick = onClick),
         shape = Shapes.medium,
@@ -81,9 +81,12 @@ fun MeasureItem(
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                /*
                 IconButton(onClick = onDeleteClick) {
                     DeleteIcon(Modifier.fillMaxHeight().align(Alignment.Bottom))
                 }
+
+                 */
             }
         }
     }
